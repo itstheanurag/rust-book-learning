@@ -1,3 +1,5 @@
+mod types;
+
 const THREE_HOURS_IN_SECONDS: i32 = 60 * 60 * 3;
 
 fn main() {
@@ -5,7 +7,8 @@ fn main() {
     about_variables();
     const_variables();
     shadowing();
-    println!("{}", THREE_HOURS_IN_SECONDS)
+    println!("{}", THREE_HOURS_IN_SECONDS);
+    types::data_types();
 }
 
 fn about_variables() {
@@ -29,10 +32,9 @@ fn non_mutable_variale() {
 }
 
 fn const_variables() {
-    const age: i32 = 32;
-    println!("YOU ARE {}", age);
+    const AGE: i32 = 32;
+    println!("YOU ARE {}", AGE);
 }
-
 
 fn shadowing() {
     let x = 5;
@@ -40,21 +42,16 @@ fn shadowing() {
     println!("shadowing {}", x);
     shadowing_nested();
     multi_shadow();
-
 }
-
 
 fn shadowing_nested() {
     let x = 5;
-
     {
-        let x = 10;   // shadows outer x
+        let x = 10; // shadows outer x
         println!("inner x = {}", x); // 10
     }
-
     println!("outer x = {}", x); // 5
 }
-
 
 fn multi_shadow() {
     let x = 1;
@@ -62,31 +59,28 @@ fn multi_shadow() {
     {
         let x = x + 1; // inner x = 2
         println!("level 1: {}", x);
-
         {
             let x = x * 10; // deeper x = 20
             println!("level 2: {}", x);
         }
-
         println!("back to level 1: {}", x); // still 2
     }
 
     println!("outer level: {}", x); // still 1
 }
 
-
 /* NOTES
 
   VARIABLES:
   ----------
   VARIABLES CAN BE MUTATED AND YOU DON'T NEED TO SPECIFY THE TYPE OF THE VARIABLE.
-  The type is inferred when you declare variables with `let`.  
+  The type is inferred when you declare variables with `let`.
   Variables declared with `let` are always block scoped, meaning they only live
   inside the `{}` block in which they are created.
 
   IMMUTABILITY:
   -------------
-  By default, variables in Rust are immutable.  
+  By default, variables in Rust are immutable.
   If you want to change the value of a variable, you must use the `mut` keyword.
 
       let mut x = 10;
@@ -113,12 +107,12 @@ fn multi_shadow() {
 
   CONSTANTS:
   ----------
-  `const` declarations MUST HAVE A TYPE, and they CANNOT BE MUTATED.  
+  `const` declarations MUST HAVE A TYPE, and they CANNOT BE MUTATED.
   The value of a `const` must be known at compile time.
 
       const MAX_POINTS: i32 = 100_000;
 
-  Constants are not block-scoped like `let` variables.  
+  Constants are not block-scoped like `let` variables.
   They have a static lifetime and are accessible everywhere in the program
   (as long as they follow visibility rules).
 
@@ -136,4 +130,3 @@ fn multi_shadow() {
   - `let` is block-scoped; `const` behaves like a global, compile-time value.
 
 */
-
