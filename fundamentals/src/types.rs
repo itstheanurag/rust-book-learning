@@ -1,4 +1,4 @@
-pub fn data_types() {
+pub fn basics() {
     // Scalar types: integers, floating-point numbers, booleans, and characters
 
     /*
