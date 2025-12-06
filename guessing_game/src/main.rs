@@ -2,44 +2,40 @@ use std::{cmp::Ordering, io};
 
 use rand::Rng;
 
-
 fn main() {
     println!("Guessing Game Started!");
     let secret_number: u32 = rand::rng().random_range(1..100);
 
     loop {
-       println!("Please input your guess:");
+        println!("Please input your guess:");
 
-       let mut guess: String = String::new();
+        let mut guess: String = String::new();
 
-       io::stdin()
-          .read_line(&mut guess)
-          .expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line");
 
-      // this is called shadowing
-      let guess:u32 = match guess.trim().parse() {
-        Ok(num) => num,
-        Err(_err) => {
-            println!("Please enter a valid input");
-            continue;
+        // this is called shadowing
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_err) => {
+                println!("Please enter a valid input");
+                continue;
+            }
+        };
+
+        println!("You guessed {}", guess);
+        // match is exhaustive, need to cover all possible scenerio's otherwise it will complain
+        match guess.cmp(&secret_number) {
+            Ordering::Equal => {
+                println!("You Guessed correct");
+                break;
+            } // this is an arm in the match pattern
+            Ordering::Greater => println!("You guessed a number greater than machine"),
+            Ordering::Less => println!("You guessed a number less than machine"),
         }
-      };
-
-      println!("You guessed {}", guess );
-      // match is exhaustive, need to cover all possible scenerio's otherwise it will complain
-      match guess.cmp(&secret_number) {
-        Ordering::Equal => {
-             println!("You Guessed correct");
-             break;
-        } // this is an arm in the match pattern
-        Ordering::Greater => println!("You guessed a number greater than machine"),
-        Ordering::Less => println!("You guessed a number less than machine")
-      }
     }
-    
 }
-
-
 
 /* ABOUT THE IMPORTS
 
@@ -56,7 +52,6 @@ Rust does *not* automatically import everything from the standard library.
 Modules like `io`, `fs`, `env` etc. must still be imported explicitly when needed.
 
 */
-
 
 /* ABOUT STRING
 
@@ -80,7 +75,6 @@ reading input, the program will panic and display the provided message.
 
 */
 
-
 /* ABOUT RANDOM NUMBERS & CRATES
 
 The Rust standard library does NOT include a random number generator.
@@ -97,7 +91,6 @@ must be used by another crate (like your main program).
 Cargo (Rust’s package manager) allows adding external crates through `Cargo.toml`.
 
 */
-
 
 /* ABOUT THE PROGRAM FLOW & WHY WE DO EACH STEP
 
@@ -134,7 +127,7 @@ Shadowing is preferred here because:
 - It avoids creating extra variable names like `guess_str`, `guess_num`.
 - It keeps the code clean and readable.
 
-We use `match` on `parse()` because parsing can fail.  
+We use `match` on `parse()` because parsing can fail.
 If parsing fails, we inform the user and continue the loop without crashing.
 
 6. COMPARING THE GUESS WITH THE SECRET NUMBER
