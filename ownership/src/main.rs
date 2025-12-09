@@ -1,3 +1,5 @@
+mod give_and_take;
+mod refrenece;
 fn main() {
     println!("learning about the ownership in rust");
     string_slice();
@@ -12,6 +14,8 @@ fn main() {
 
     borrow_example(&s3); // Borrow the string (does not take ownership).
     println!("{}", s3); // `s3` is still valid here.
+    give_and_take::ownership();
+    refrenece::ownership_refrences();
 }
 
 fn borrow_example(s: &String) {
