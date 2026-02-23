@@ -1,0 +1,181 @@
+# Load Balancer in Rust — Implementation Steps
+
+## Step 0: Project setup
+
+1. Create a new Rust binary project
+
+   ```bash
+   cargo new rust-load-balancer
+   cd rust-load-balancer
+   ```
+
+2. Add dependencies
+
+   ```toml
+   # Cargo.toml
+   [dependencies]
+   tokio = { version = "1", features = ["full"] }
+   hyper = { version = "0.14", features = ["full"] }
+   ```
+
+---
+
+## Step 1: Start an async HTTP server
+
+**Goal:** Accept incoming HTTP requests.
+
+1. Create an async `main` function using `tokio`
+2. Bind a server to `0.0.0.0:8080`
+3. Add a handler function that receives a `Request` and returns a `Response`
+4. For now, always return `"OK"`
+
+✅ Result: You can `curl localhost:8080` and get a response.
+
+---
+
+## Step 2: Define backend servers
+
+**Goal:** Hardcode backend targets.
+
+1. Create a `Backend` struct
+
+   * `url: String`
+2. Create a `Vec<Backend>` with:
+
+   * `http://localhost:3001`
+   * `http://localhost:3002`
+
+✅ Result: Backends exist but are unused.
+
+---
+
+## Step 3: Share backend state safely
+
+**Goal:** Make backends accessible across requests.
+
+1. Wrap the backend list in:
+
+   * `Arc<Mutex<Vec<Backend>>>`
+2. Move this shared state into the request handler
+3. Confirm compilation errors guide you to correct ownership
+
+✅ Result: Multiple requests can read backend list safely.
+
+---
+
+## Step 4: Implement round-robin selection
+
+**Goal:** Pick a backend per request.
+
+1. Create a shared counter:
+
+   * `Arc<Mutex<usize>>`
+2. On each request:
+
+   * Lock counter
+   * Increment
+   * `% backends.len()`
+3. Select backend index
+
+✅ Result: Requests alternate between backends.
+
+---
+
+## Step 5: Forward HTTP requests
+
+**Goal:** Act as a proxy.
+
+1. Create a `hyper::Client`
+2. For each incoming request:
+
+   * Clone method, headers, and body
+   * Rewrite the URI to the selected backend
+3. Send request using the client
+4. Await backend response
+5. Return backend response to client
+
+✅ Result: Load balancer actually works.
+
+---
+
+## Step 6: Handle failures gracefully
+
+**Goal:** Don’t crash on backend failure.
+
+1. Wrap forwarding logic in `Result`
+2. If a backend fails:
+
+   * Return `502 Bad Gateway`
+3. Log the error
+
+✅ Result: LB survives backend crashes.
+
+---
+
+## Step 7: Add backend health checks
+
+**Goal:** Avoid dead servers.
+
+1. Extend `Backend`:
+
+   * `healthy: bool`
+2. Spawn a background task:
+
+   * Periodically `GET /health` on each backend
+3. Mark backend healthy/unhealthy
+4. Skip unhealthy backends in selection
+
+✅ Result: LB routes only to healthy backends.
+
+---
+
+## Step 8: Improve concurrency
+
+**Goal:** Reduce contention.
+
+1. Replace `Mutex<Vec<Backend>>` with:
+
+   * `Arc<RwLock<Vec<Backend>>>`
+2. Use:
+
+   * Read lock for routing
+   * Write lock for health updates
+
+✅ Result: Better throughput under load.
+
+---
+
+## Step 9: Make routing pluggable
+
+**Goal:** Clean design.
+
+1. Create a `Strategy` enum:
+
+   * `RoundRobin`
+   * `LeastConnections`
+2. Match strategy in request handler
+3. Keep selection logic isolated
+
+✅ Result: Extendable architecture.
+
+---
+
+## Step 10: Graceful shutdown
+
+**Goal:** Production-grade behavior.
+
+1. Listen for `SIGINT`
+2. Stop accepting new requests
+3. Wait for in-flight requests to finish
+
+✅ Result: No dropped connections on shutdown.
+
+---
+
+## Optional Enhancements (Pick 1–2)
+
+* Config file (`toml`)
+* Metrics endpoint
+* Request timeout
+* Retry logic
+* TCP-level proxy instead of HTTP
